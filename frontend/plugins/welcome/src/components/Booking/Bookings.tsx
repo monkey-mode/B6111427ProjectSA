@@ -1,19 +1,19 @@
-import React,{ useState, useEffect }  from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
-  Content,Header,Page,pageTheme,ContentHeader,
+  Content, Header, Page, pageTheme, ContentHeader,
 } from '@backstage/core';
 import {
-  Table,TableBody,TableCell,TableRow,Typography,
-  TextField,Button,withStyles,makeStyles,
-  Theme,FormControl,InputLabel,MenuItem,
-  FormHelperText,Select,createStyles,
+  Table, TableBody, TableCell, TableRow, Typography,
+  TextField, Button, withStyles, makeStyles,
+  Theme, FormControl, InputLabel, MenuItem,
+  FormHelperText, Select, createStyles,
 } from '@material-ui/core';
 
 import { Alert } from '@material-ui/lab';
 
 import { DefaultApi } from '../../api/apis';
-import { 
+import {
   EntClientEntity,
   EntBookingtype,
   EntBooking,
@@ -52,68 +52,68 @@ export default function Create() {
   const [clients, setClients] = useState<EntClientEntity[]>(Array);
   const [users, setUsers] = useState<EntUser[]>(Array);
   const [bookingtypes, setBookingtypes] = useState<EntBookingtype[]>(Array);
-useEffect(() => {
+  useEffect(() => {
     const getCliententity = async () => {
-        const res = await api.listCliententity({ limit: 10, offset: 0 });
-        setLoading(false);
-        setClients(res);
+      const res = await api.listCliententity({ limit: 10, offset: 0 });
+      setLoading(false);
+      setClients(res);
     };
     getCliententity();
 
     const getUsers = async () => {
-        const res = await api.listUser({ limit: 10, offset: 0 });
-        setLoading(false);
-        setUsers(res);
+      const res = await api.listUser({ limit: 10, offset: 0 });
+      setLoading(false);
+      setUsers(res);
     };
     getUsers();
 
     const getBookingtype = async () => {
-        const res = await api.listBookingtype({ limit: 10, offset: 0 });
-        setLoading(false);
-        setBookingtypes(res);
+      const res = await api.listBookingtype({ limit: 10, offset: 0 });
+      setLoading(false);
+      setBookingtypes(res);
     };
     getBookingtype();
 
-    
-  
-    
-}, [loading]);
-
-const BookingDatehandleChange = (event: any) => {
-  setBookingdate(event.target.value as string);
-};
-
-const BookingIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-  setBookingtypeID(event.target.value as number);
-};
-
-const clientIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-  setClientID(event.target.value as number);
-};
-
-const UserIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-  setUserID(event.target.value as number);
-};
 
 
-const [bookingdate, setBookingdate] = useState(String);
-const [timeleft, setTimeleft] = useState(String);
-const [bookingtypeID, setBookingtypeID] = useState(Number);
-const [clientID, setClientID] = useState(Number);
-const [userID, setUserID] = useState(Number);
 
-const CreateBooking = async () => {
-  setTimeleft("03:00:00")
-  const booking = {
-    bookingDate : bookingdate + ":00+07:00",
-    timeLeft : timeleft,
-    bookingtype : bookingtypeID,
-    client : clientID,
-    user : userID,
+  }, [loading]);
+
+  const BookingDatehandleChange = (event: any) => {
+    setBookingdate(event.target.value as string);
   };
-  console.log(booking);
-  const res: any = await api.createBooking({ booking : booking });
-  setStatus(true);
+
+  const BookingIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setBookingtypeID(event.target.value as number);
+  };
+
+  const clientIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setClientID(event.target.value as number);
+  };
+
+  const UserIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setUserID(event.target.value as number);
+  };
+
+
+  const [bookingdate, setBookingdate] = useState(String);
+  const [timeleft, setTimeleft] = useState(String);
+  const [bookingtypeID, setBookingtypeID] = useState(Number);
+  const [clientID, setClientID] = useState(Number);
+  const [userID, setUserID] = useState(Number);
+
+  const CreateBooking = async () => {
+    setTimeleft("03:00:00")
+    const booking = {
+      bookingDate: bookingdate + ":00+07:00",
+      timeLeft: timeleft,
+      bookingtype: bookingtypeID,
+      client: clientID,
+      user: userID,
+    };
+    console.log(booking);
+    const res: any = await api.createBooking({ booking: booking });
+    setStatus(true);
     if (res.id != '') {
       setAlert(true);
     } else {
@@ -122,41 +122,42 @@ const CreateBooking = async () => {
     const timer = setTimeout(() => {
       setStatus(false);
     }, 1000);
-};
+  };
 
-return (
-  <Page theme={pageTheme.home}>
-    <Header
-      title={`${profile.givenName}`}
-    //subtitle="Some quick intro and links."
-    ></Header>
-    <Content>
-      <ContentHeader title="เพิ่มข้อมูลการจอง">
-        <Typography align="left" style={{ marginRight: 16, color: "#00eeff" }}>
-          {username.givenuser}
-        </Typography>
-        <div>
-          <Button variant="contained" color="primary">
-            ออกจากระบบ
-       </Button>
-        </div>
-        {status ? (
+  return (
+    <Page theme={pageTheme.home}>
+      <Header
+        title={`${profile.givenName}`}
+      //subtitle="Some quick intro and links."
+      ></Header>
+      <Content>
+        <ContentHeader title="เพิ่มข้อมูลการจอง">
+          <Typography align="left" style={{ marginRight: 16, color: "#00eeff" }}>
+            {username.givenuser}
+          </Typography>
           <div>
-            {alert ? (
-              <Alert severity="success">
-                This is a success alert — check it out!
-              </Alert>
-            ) : (
-                <Alert severity="warning" style={{ marginTop: 20 }}>
-                  This is a warning alert — check it out!
-                </Alert>
-              )}
+            <Button variant="contained" color="primary">
+              ออกจากระบบ
+       </Button>
           </div>
-        ) : null}
-      </ContentHeader>
-      <div className={classes.root}>
-        <form noValidate autoComplete="off">
-        <FormControl
+          {status ? (
+            <div>
+              {alert ? (
+                <Alert severity="success">
+                  This is a success alert — check it out!
+                </Alert>
+              ) : (
+                  <Alert severity="warning" style={{ marginTop: 20 }}>
+                    This is a warning alert — check it out!
+                  </Alert>
+                )}
+            </div>
+          ) : null}
+        </ContentHeader>
+        <div className={classes.root}>
+          <form noValidate autoComplete="off">
+            
+            <FormControl
               className={classes.margin}
               variant="outlined"
             >
@@ -168,90 +169,90 @@ return (
                 onChange={clientIDhandleChange}
                 style={{ width: 400 }}
               >
-              {clients.map((item: EntClientEntity) => (
+                {clients.map((item: EntClientEntity) => (
                   <MenuItem value={item.id}>{item.cLIENTNAME}</MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-          <div>
+            <div>
+              <FormControl
+                className={classes.margin}
+                variant="outlined"
+              >
+                <InputLabel id="user-label">สมาชิกห้องสมุด</InputLabel>
+                <Select
+                  labelId="user-label"
+                  id="user"
+                  value={userID}
+                  onChange={UserIDhandleChange}
+                  style={{ width: 400 }}
+                >
+                  {users.map((item: EntUser) => (
+                    <MenuItem value={item.id}>{item.uSERNAME}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+
             <FormControl
               className={classes.margin}
               variant="outlined"
             >
-              <InputLabel id="user-label">สมาชิกห้องสมุด</InputLabel>
+              <InputLabel id="bookingType">ประเภทของผู้ใช้งาน</InputLabel>
               <Select
-                labelId="user-label"
-                id="user"
-                value={userID}
-                onChange={UserIDhandleChange}
-                style={{ width: 400 }}
+                labelId="bookingType"
+                id="bookingType"
+                value={bookingtypeID}
+                onChange={BookingIDhandleChange}
+                style={{ width: 200 }}
               >
-              {users.map((item: EntUser) => (
-                <MenuItem value={item.id}>{item.uSERNAME}</MenuItem>
-              ))}
+                {bookingtypes.map((item: EntBookingtype) => (
+                  <MenuItem value={item.id}>{item.bOOKTYPENAME}</MenuItem>
+                ))}
               </Select>
             </FormControl>
-          </div>
+            <div>
+              <FormControl
+                className={classes.margin}
+                variant="outlined"
+              >
+                <TextField
+                  id="deathtime"
+                  label="ว/ด/ป เวลาเสียชีวิต"
+                  type="datetime-local"
+                  value={bookingdate}
+                  onChange={BookingDatehandleChange}
+                  className={classes.textField}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </FormControl>
+            </div>
 
-          <FormControl
-            className={classes.margin}
-            variant="outlined"
-          >
-            <InputLabel id="bookingType">ประเภทของผู้ใช้งาน</InputLabel>
-            <Select
-              labelId="bookingType"
-              id="bookingType"
-              value={bookingtypeID}
-              onChange={BookingIDhandleChange}
-              style={{ width: 200 }}
-            >
-              {bookingtypes.map((item: EntBookingtype) => (
-                <MenuItem value={item.id}>{item.bOOKTYPENAME}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <div>
-            <FormControl
-              className={classes.margin}
-              variant="outlined"
-            >
-              <TextField
-                id="deathtime"
-                label="ว/ด/ป เวลาเสียชีวิต"
-                type="datetime-local"
-                value={bookingdate}
-                onChange={BookingDatehandleChange}
-                className={classes.textField}
-                InputLabelProps={{
-                  shrink: true,
+            <div className={classes.margin}>
+              <Button
+                onClick={() => {
+                  CreateBooking();
                 }}
-              />
-            </FormControl>
-          </div>
-
-          <div className={classes.margin}>
-            <Button
-              onClick={() => {
-                CreateBooking();
-              }}
-              variant="contained"
-              color="primary"
-            >
-              [บันทึกการจอง]
+                variant="contained"
+                color="primary"
+              >
+                [บันทึกการจอง]
            </Button>
-            <Button
-              style={{ marginLeft: 20 }}
-              component={RouterLink}
-              to="/welcome"
-              variant="contained"
-            >
-              กลับ
+              <Button
+                style={{ marginLeft: 20 }}
+                component={RouterLink}
+                to="/welcome"
+                variant="contained"
+              >
+                กลับ
            </Button>
-          </div>
-        </form>
-      </div>
-    </Content>
-  </Page>
-);
+            </div>
+          </form>
+        </div>
+      </Content>
+    </Page>
+  );
 }

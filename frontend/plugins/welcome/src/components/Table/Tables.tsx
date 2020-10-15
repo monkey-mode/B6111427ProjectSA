@@ -19,7 +19,7 @@ const useStyles = makeStyles({
 export default function ComponentsTable() {
     const classes = useStyles();
     const api = new DefaultApi();
-    
+
     const [bookings, setBookings] = useState<EntBooking[]>(Array);
     const [loading, setLoading] = useState(true);
 
@@ -31,7 +31,10 @@ export default function ComponentsTable() {
         };
         getUsers();
     }, [loading]);
-    
+    const deleteUsers = async (id: number) => {
+        const res = await api.deleteBooking({ id: id });
+        setLoading(true);
+    };
     return (
         <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
@@ -46,7 +49,7 @@ export default function ComponentsTable() {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {bookings.map((item:any)  => (
+                    {bookings.map((item: any) => (
                         <TableRow key={item.id}>
                             <TableCell align="center">{item.id}</TableCell>
                             <TableCell align="center">{item.edges.usedby.uSERNAME}</TableCell>
@@ -54,6 +57,18 @@ export default function ComponentsTable() {
                             <TableCell align="center">{item.edges.using.cLIENTNAME}</TableCell>
                             <TableCell align="center">{item.bOOKINGDATE}</TableCell>
                             <TableCell align="center">{item.tIMELEFT}</TableCell>
+                            <TableCell align="center">
+                                <Button
+                                    onClick={() => {
+                                        deleteUsers(item.id);
+                                    }}
+                                    style={{ marginLeft: 10 }}
+                                    variant="contained"
+                                    color="secondary"
+                                >
+                                    Delete
+               </Button>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

@@ -9,7 +9,10 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { DefaultApi } from '../../api/apis';
-import { EntBooking } from '../../api/models/EntBooking';
+import {
+    EntClientEntity,
+    EntBooking,
+  } from '../../api/models/';
 const useStyles = makeStyles({
     table: {
         minWidth: 650,
@@ -31,10 +34,16 @@ export default function ComponentsTable() {
         };
         getUsers();
     }, [loading]);
-    const deleteUsers = async (id: number) => {
+    
+    const deleteUsers = async (id: number,cid :number) => {
+        const cliententity = {
+            cLIENTSTATUS : "Available",
+          };
         const res = await api.deleteBooking({ id: id });
+        const res2 = await api.updateCliententity({ id: cid ,cliententity : cliententity});
         setLoading(true);
     };
+    
     return (
         <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
@@ -60,7 +69,7 @@ export default function ComponentsTable() {
                             <TableCell align="center">
                                 <Button
                                     onClick={() => {
-                                        deleteUsers(item.id);
+                                        deleteUsers(item.id,item.edges.using.id);
                                     }}
                                     style={{ marginLeft: 10 }}
                                     variant="contained"

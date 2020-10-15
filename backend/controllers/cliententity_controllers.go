@@ -243,6 +243,7 @@ func (ctl *ClientEntityController) UpdateClientEntity(c *gin.Context) {
 	obj.ID = int(id)
 	cl, err := ctl.client.ClientEntity.
 		UpdateOne(&obj).
+		SetCLIENTSTATUS(obj.CLIENTSTATUS).
 		Save(context.Background())
 	if err != nil {
 		c.JSON(400, gin.H{"error": "update failed"})

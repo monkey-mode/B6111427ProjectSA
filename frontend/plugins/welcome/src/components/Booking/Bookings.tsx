@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ComponanceTable from '../TableClient';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Content, Header, Page, pageTheme, ContentHeader,
@@ -111,7 +112,11 @@ export default function Create() {
       client: clientID,
       user: userID,
     };
+    const cliententity = {
+      cLIENTSTATUS : "In Use",
+    };
     console.log(booking);
+    const res2: any = await api.updateCliententity({ id:clientID,cliententity: cliententity});
     const res: any = await api.createBooking({ booking: booking });
     setStatus(true);
     if (res.id != '') {
@@ -140,6 +145,7 @@ export default function Create() {
               ออกจากระบบ
        </Button>
           </div>
+          
           {status ? (
             <div>
               {alert ? (
@@ -154,9 +160,10 @@ export default function Create() {
             </div>
           ) : null}
         </ContentHeader>
+        <ComponanceTable></ComponanceTable>
         <div className={classes.root}>
           <form noValidate autoComplete="off">
-            
+
             <FormControl
               className={classes.margin}
               variant="outlined"

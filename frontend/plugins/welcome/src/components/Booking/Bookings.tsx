@@ -17,7 +17,6 @@ import { DefaultApi } from '../../api/apis';
 import {
   EntClientEntity,
   EntBookingtype,
-  EntBooking,
   EntUser,
 } from '../../api/models/';
 
@@ -113,10 +112,10 @@ export default function Create() {
       user: userID,
     };
     const cliententity = {
-      cLIENTSTATUS : "In Use",
+      cLIENTSTATUS: "In Use",
     };
     console.log(booking);
-    const res2: any = await api.updateCliententity({ id:clientID,cliententity: cliententity});
+    const res2: any = await api.updateCliententity({ id: clientID, cliententity: cliententity });
     const res: any = await api.createBooking({ booking: booking });
     setStatus(true);
     if (res.id != '') {
@@ -145,7 +144,7 @@ export default function Create() {
               ออกจากระบบ
        </Button>
           </div>
-          
+
           {status ? (
             <div>
               {alert ? (
@@ -163,25 +162,26 @@ export default function Create() {
         <ComponanceTable></ComponanceTable>
         <div className={classes.root}>
           <form noValidate autoComplete="off">
-
-            <FormControl
-              className={classes.margin}
-              variant="outlined"
-            >
-              <InputLabel id="client-label">เครื่องรับชม</InputLabel>
-              <Select
-                labelId="client-label"
-                id="client"
-                value={clientID}
-                onChange={clientIDhandleChange}
-                style={{ width: 400 }}
+            <div>
+              <FormControl
+                className={classes.margin}
+                variant="outlined"
               >
-                {clients.map((item: EntClientEntity) => (
-                  <MenuItem value={item.id}>{item.cLIENTNAME}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
 
+                <InputLabel id="client-label">เครื่องรับชม</InputLabel>
+                <Select
+                  labelId="client-label"
+                  id="client"
+                  value={clientID}
+                  onChange={clientIDhandleChange}
+                  style={{ width: 400 }}
+                >
+                  {clients.map((item: EntClientEntity) => (
+                    <MenuItem value={item.id}>{item.cLIENTNAME}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
             <div>
               <FormControl
                 className={classes.margin}
@@ -196,37 +196,36 @@ export default function Create() {
                   style={{ width: 400 }}
                 >
                   {users.map((item: EntUser) => (
-                    <MenuItem value={item.id}>{item.uSERNAME}</MenuItem>
+                    <MenuItem value={item.id}>{item.uSEREMAIL}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </div>
-
-            <FormControl
-              className={classes.margin}
-              variant="outlined"
-            >
-              <InputLabel id="bookingType">ประเภทของผู้ใช้งาน</InputLabel>
-              <Select
-                labelId="bookingType"
-                id="bookingType"
-                value={bookingtypeID}
-                onChange={BookingIDhandleChange}
-                style={{ width: 200 }}
+            <div >
+              <FormControl
+                className={classes.margin}
+                variant="outlined"
               >
-                {bookingtypes.map((item: EntBookingtype) => (
-                  <MenuItem value={item.id}>{item.bOOKTYPENAME}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <div>
+                <InputLabel id="bookingType">ประเภทของผู้ใช้งาน</InputLabel>
+                <Select
+                  labelId="bookingType"
+                  id="bookingType"
+                  value={bookingtypeID}
+                  onChange={BookingIDhandleChange}
+                  style={{ width: 200 }}
+                >
+                  {bookingtypes.map((item: EntBookingtype) => (
+                    <MenuItem value={item.id}>{item.bOOKTYPENAME}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <FormControl
                 className={classes.margin}
                 variant="outlined"
               >
                 <TextField
                   id="deathtime"
-                  label="ว/ด/ป เวลาเสียชีวิต"
+                  label="วันเวลาที่จอง"
                   type="datetime-local"
                   value={bookingdate}
                   onChange={BookingDatehandleChange}
@@ -237,7 +236,6 @@ export default function Create() {
                 />
               </FormControl>
             </div>
-
             <div className={classes.margin}>
               <Button
                 onClick={() => {

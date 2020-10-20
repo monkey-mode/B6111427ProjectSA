@@ -7,6 +7,7 @@ import (
 
 	"github.com/B6111427/app/ent"
 	"github.com/B6111427/app/ent/user"
+	"github.com/B6111427/app/ent/role"
 	"github.com/gin-gonic/gin"
 )
 
@@ -117,6 +118,7 @@ func (ctl *UserController) ListUser(c *gin.Context) {
 
 	users, err := ctl.client.User.
 		Query().
+		Where(user.HasRoleplayWith(role.IDEQ(1))).
 		Limit(limit).
 		Offset(offset).
 		All(context.Background())

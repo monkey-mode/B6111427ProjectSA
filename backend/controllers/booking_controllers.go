@@ -82,8 +82,8 @@ func (ctl *BookingController) CreateBooking(c *gin.Context) {
 		})
 		return
 	}
-	times, err := time.Parse("2 Jan 2006 15:04:05.", obj.BookingDate)
-	times2, err := time.Parse("03:00:00", obj.TimeLeft)
+	times, err := time.Parse(time.RFC3339, obj.BookingDate)
+	times2, err := time.Parse("HH:mm:ss", obj.TimeLeft)
 	b, err := ctl.client.Booking.
 		Create().
 		SetBOOKINGDATE(times).

@@ -108,6 +108,7 @@ func main() {
 	User := []User{
 			User{"B6111427@g.sut.sc.th","Suphachai Phetthamrong",1},
 			User{"suphachaiphetthamrong@gmail.com","Phetthamrong Suphachai",1},
+			User{"faomg201@gmail.com","Nfa CarryNumberOne",2},
 	}
 	
 	for _, u := range User {

@@ -65,13 +65,13 @@ export default function Loglin(){
         <ContentHeader title="กรุณาเลือกทำการใส่ Email"></ContentHeader>
         <div className={classes.root}>
           <form noValidate autoComplete="off">
-            <div>
+            <table>
+              <tr><td width="100">อีเมลผู้ใช้</td><td>
               <FormControl
                 className={classes.margin}
                 variant="outlined"
               >
-
-                <InputLabel id="email-label">อีเมลผู้ใช้</InputLabel>
+                <InputLabel id="email-label"></InputLabel>
                 <Select
                   labelId="email-label"
                   id="email"
@@ -85,14 +85,15 @@ export default function Loglin(){
                   ))}
                 </Select>
               </FormControl>
-            </div>
-            <div>
+              </td>
+              </tr>
+              <tr><td>ชื่อผู้ใช้</td><td>
               <FormControl
                 disabled
                 className={classes.margin}
                 variant="outlined"
               >
-                <InputLabel id="user-label">ชื่อผู้ใช้</InputLabel>
+                <InputLabel id="user-label"></InputLabel>
                 <Select
                   labelId="user-label"
                   id="user"
@@ -105,8 +106,11 @@ export default function Loglin(){
                   ))}
                 </Select>
               </FormControl>
-            </div>
-            <div className={classes.margin}>
+              </td>
+              </tr>
+            </table>
+            <table align="center">
+            <div>
               <Button
               onClick={() => {
               
@@ -120,7 +124,8 @@ export default function Loglin(){
               >
                 [Login]
            </Button>
-            </div>
+           </div>
+           </table>
           </form>
         </div>
         

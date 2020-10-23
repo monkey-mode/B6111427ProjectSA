@@ -24,10 +24,6 @@ func init() {
 	bookingDescBOOKINGDATE := bookingFields[0].Descriptor()
 	// booking.DefaultBOOKINGDATE holds the default value on creation for the BOOKING_DATE field.
 	booking.DefaultBOOKINGDATE = bookingDescBOOKINGDATE.Default.(func() time.Time)
-	// bookingDescTIMELEFT is the schema descriptor for TIME_LEFT field.
-	bookingDescTIMELEFT := bookingFields[1].Descriptor()
-	// booking.DefaultTIMELEFT holds the default value on creation for the TIME_LEFT field.
-	booking.DefaultTIMELEFT = bookingDescTIMELEFT.Default.(func() time.Time)
 	bookingtypeFields := schema.Bookingtype{}.Fields()
 	_ = bookingtypeFields
 	// bookingtypeDescBOOKTYPENAME is the schema descriptor for BOOKTYPE_NAME field.

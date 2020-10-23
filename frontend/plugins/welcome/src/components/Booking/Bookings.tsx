@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: theme.spacing(3),
     },
     textField: {
-      width: '25ch',
+      width: '35ch',
     },
   }),
 );
@@ -103,10 +103,9 @@ export default function Create() {
   const [userID, setUserID] = useState(Number);
 
   const CreateBooking = async () => {
-    setTimeleft("03:00:00")
     const booking = {
-      bookingDate: bookingdate,
-      timeLeft: timeleft,
+      bookingDate: bookingdate+":00+07:00",
+      timeLeft: String("2020-01-01T03:00:00+07:00"),
       bookingtype: bookingtypeID,
       client: clientID,
       user: userID,
@@ -127,7 +126,6 @@ export default function Create() {
       setStatus(false);
     }, 1000);
   };
-
   return (
     <Page theme={pageTheme.home}>
       <Header
@@ -145,30 +143,19 @@ export default function Create() {
        </Button>
           </div>
 
-          {status ? (
-            <div>
-              {alert ? (
-                <Alert severity="success">
-                  This is a success alert — check it out!
-                </Alert>
-              ) : (
-                  <Alert severity="warning" style={{ marginTop: 20 }}>
-                    This is a warning alert — check it out!
-                  </Alert>
-                )}
-            </div>
-          ) : null}
+          
         </ContentHeader>
         <ComponanceTable></ComponanceTable>
         <div className={classes.root}>
           <form noValidate autoComplete="off">
-            <div>
+            <table>
+              <tr><td width="150">เลือกเครื่องรับชม</td><td>
               <FormControl
                 className={classes.margin}
                 variant="outlined"
               >
 
-                <InputLabel id="client-label">เครื่องรับชม</InputLabel>
+                <InputLabel id="client-label"></InputLabel>
                 <Select
                   labelId="client-label"
                   id="client"
@@ -181,13 +168,14 @@ export default function Create() {
                   ))}
                 </Select>
               </FormControl>
-            </div>
-            <div>
+              </td>
+              </tr>
+              <tr><td>สมาชิกห้องสมุด</td><td>
               <FormControl
                 className={classes.margin}
                 variant="outlined"
               >
-                <InputLabel id="user-label">สมาชิกห้องสมุด</InputLabel>
+                <InputLabel id="user-label"></InputLabel>
                 <Select
                   labelId="user-label"
                   id="user"
@@ -200,13 +188,14 @@ export default function Create() {
                   ))}
                 </Select>
               </FormControl>
-            </div>
-            <div >
+              </td>
+              </tr>
+              <tr><td>เลือกประเภทของผู้ใช้งาน</td><td>
               <FormControl
                 className={classes.margin}
                 variant="outlined"
               >
-                <InputLabel id="bookingType">ประเภทของผู้ใช้งาน</InputLabel>
+                <InputLabel id="bookingType"></InputLabel>
                 <Select
                   labelId="bookingType"
                   id="bookingType"
@@ -219,13 +208,16 @@ export default function Create() {
                   ))}
                 </Select>
               </FormControl>
+              </td>
+              </tr>
+              <tr><td>เลือกวันที่และเวลา</td><div>
               <FormControl
                 className={classes.margin}
                 variant="outlined"
               >
                 <TextField
                   id="deathtime"
-                  label="วันเวลาที่จอง"
+                  label=""
                   type="datetime-local"
                   value={bookingdate}
                   onChange={BookingDatehandleChange}
@@ -235,11 +227,15 @@ export default function Create() {
                   }}
                 />
               </FormControl>
-            </div>
-            <div className={classes.margin}>
-              <Button
+              </div>
+              </tr>
+
+            </table>
+            <tr><td width="300">
+            <Button
                 onClick={() => {
                   CreateBooking();
+                  
                 }}
                 
                 variant="contained"
@@ -255,7 +251,20 @@ export default function Create() {
               >
                 กลับ
            </Button>
+           </td><td>{status ? (
+            <div>
+              {alert ? (
+                <Alert severity="success">
+                  This is a success alert — check it out!
+                </Alert>
+              ) : (
+                  <Alert severity="warning" style={{ marginTop: 20 }}>
+                    This is a warning alert — check it out!
+                  </Alert>
+                )}
             </div>
+          ) : null}</td>
+           </tr>
           </form>
         </div>
       </Content>

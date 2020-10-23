@@ -18,8 +18,7 @@ func (Booking) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("BOOKING_DATE").
 			Default(time.Now),
-		field.Time("TIME_LEFT").
-			Default(time.Now),
+		field.Time("TIME_LEFT"),
 	}
 }
 

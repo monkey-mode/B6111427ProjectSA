@@ -51,14 +51,6 @@ func (bu *BookingUpdate) SetTIMELEFT(t time.Time) *BookingUpdate {
 	return bu
 }
 
-// SetNillableTIMELEFT sets the TIME_LEFT field if the given value is not nil.
-func (bu *BookingUpdate) SetNillableTIMELEFT(t *time.Time) *BookingUpdate {
-	if t != nil {
-		bu.SetTIMELEFT(*t)
-	}
-	return bu
-}
-
 // SetUsedbyID sets the usedby edge to User by id.
 func (bu *BookingUpdate) SetUsedbyID(id int) *BookingUpdate {
 	bu.mutation.SetUsedbyID(id)
@@ -363,14 +355,6 @@ func (buo *BookingUpdateOne) SetNillableBOOKINGDATE(t *time.Time) *BookingUpdate
 // SetTIMELEFT sets the TIME_LEFT field.
 func (buo *BookingUpdateOne) SetTIMELEFT(t time.Time) *BookingUpdateOne {
 	buo.mutation.SetTIMELEFT(t)
-	return buo
-}
-
-// SetNillableTIMELEFT sets the TIME_LEFT field if the given value is not nil.
-func (buo *BookingUpdateOne) SetNillableTIMELEFT(t *time.Time) *BookingUpdateOne {
-	if t != nil {
-		buo.SetTIMELEFT(*t)
-	}
 	return buo
 }
 

@@ -65,6 +65,4 @@ var ForeignKeys = []string{
 var (
 	// DefaultBOOKINGDATE holds the default value on creation for the BOOKING_DATE field.
 	DefaultBOOKINGDATE func() time.Time
-	// DefaultTIMELEFT holds the default value on creation for the TIME_LEFT field.
-	DefaultTIMELEFT func() time.Time
 )

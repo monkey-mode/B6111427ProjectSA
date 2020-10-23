@@ -48,6 +48,7 @@ export default function ComponentsTable() {
     return (
         <TableContainer component={Paper}>
             <Table className={classes.table} aria-label="simple table">
+                
                 <TableHead>
                     <TableRow>
                         <TableCell align="center">หมายเลขการจอง</TableCell>
@@ -65,8 +66,8 @@ export default function ComponentsTable() {
                             <TableCell align="center">{item.edges.usedby.uSERNAME}</TableCell>
                             <TableCell align="center">{item.edges.book.bOOKTYPENAME}</TableCell>
                             <TableCell align="center">{item.edges.using.cLIENTNAME}</TableCell>
-                            <TableCell align="center">{moment(item.bOOKINGDATE).format("DD/MM/YYYY HH.mm น.")}</TableCell>
-                            <TableCell align="center">{item.tIMELEFT}</TableCell>
+                            <TableCell align="center">{moment(item.bOOKINGDATE).format('YYYY/MM/DD HH:mm:ss')}</TableCell>
+                            <TableCell align="center">{moment(item.tIMELEFT).format('HH:mm:ss')}</TableCell>
                             <TableCell align="center">
                                 <Button
                                     onClick={() => {
@@ -84,5 +85,6 @@ export default function ComponentsTable() {
                 </TableBody>
             </Table>
         </TableContainer>
+        
     );
 }

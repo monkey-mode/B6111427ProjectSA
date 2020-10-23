@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -39,14 +40,6 @@ func (bc *BookingCreate) SetNillableBOOKINGDATE(t *time.Time) *BookingCreate {
 // SetTIMELEFT sets the TIME_LEFT field.
 func (bc *BookingCreate) SetTIMELEFT(t time.Time) *BookingCreate {
 	bc.mutation.SetTIMELEFT(t)
-	return bc
-}
-
-// SetNillableTIMELEFT sets the TIME_LEFT field if the given value is not nil.
-func (bc *BookingCreate) SetNillableTIMELEFT(t *time.Time) *BookingCreate {
-	if t != nil {
-		bc.SetTIMELEFT(*t)
-	}
 	return bc
 }
 
@@ -119,8 +112,7 @@ func (bc *BookingCreate) Save(ctx context.Context) (*Booking, error) {
 		bc.mutation.SetBOOKINGDATE(v)
 	}
 	if _, ok := bc.mutation.TIMELEFT(); !ok {
-		v := booking.DefaultTIMELEFT()
-		bc.mutation.SetTIMELEFT(v)
+		return nil, &ValidationError{Name: "TIME_LEFT", err: errors.New("ent: missing required field \"TIME_LEFT\"")}
 	}
 	var (
 		err  error

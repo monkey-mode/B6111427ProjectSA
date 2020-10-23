@@ -13,6 +13,7 @@ import {
     EntClientEntity,
     EntBooking,
 } from '../../api/models/';
+import moment from 'moment';
 const useStyles = makeStyles({
     table: {
         minWidth: 650,
@@ -37,7 +38,7 @@ export default function ComponentsTable() {
 
     const deleteUsers = async (id: number, cid: number) => {
         const cliententity = {
-            cLIENTSTATUS: "Available",
+            sid: 1
         };
         const res = await api.deleteBooking({ id: id });
         const res2 = await api.updateCliententity({ id: cid, cliententity: cliententity });
@@ -64,7 +65,7 @@ export default function ComponentsTable() {
                             <TableCell align="center">{item.edges.usedby.uSERNAME}</TableCell>
                             <TableCell align="center">{item.edges.book.bOOKTYPENAME}</TableCell>
                             <TableCell align="center">{item.edges.using.cLIENTNAME}</TableCell>
-                            <TableCell align="center">{item.bOOKINGDATE}</TableCell>
+                            <TableCell align="center">{moment(item.bOOKINGDATE).format("DD/MM/YYYY HH.mm น.")}</TableCell>
                             <TableCell align="center">{item.tIMELEFT}</TableCell>
                             <TableCell align="center">
                                 <Button

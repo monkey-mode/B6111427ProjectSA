@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/B6111427/app/ent/cliententity"
+	"github.com/B6111427/app/ent/status"
 	"github.com/facebookincubator/ent/dialect/sql"
 )
 
@@ -17,20 +18,21 @@ type ClientEntity struct {
 	ID int `json:"id,omitempty"`
 	// CLIENTNAME holds the value of the "CLIENT_NAME" field.
 	CLIENTNAME string `json:"CLIENT_NAME,omitempty"`
-	// CLIENTSTATUS holds the value of the "CLIENT_STATUS" field.
-	CLIENTSTATUS string `json:"CLIENT_STATUS,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ClientEntityQuery when eager-loading is set.
-	Edges ClientEntityEdges `json:"edges"`
+	Edges     ClientEntityEdges `json:"edges"`
+	Status_ID *int
 }
 
 // ClientEntityEdges holds the relations/edges for other nodes in the graph.
 type ClientEntityEdges struct {
 	// Booked holds the value of the booked edge.
 	Booked []*Booking
+	// State holds the value of the state edge.
+	State *Status
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // BookedOrErr returns the Booked value or an error if the edge
@@ -42,12 +44,32 @@ func (e ClientEntityEdges) BookedOrErr() ([]*Booking, error) {
 	return nil, &NotLoadedError{edge: "booked"}
 }
 
+// StateOrErr returns the State value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ClientEntityEdges) StateOrErr() (*Status, error) {
+	if e.loadedTypes[1] {
+		if e.State == nil {
+			// The edge state was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: status.Label}
+		}
+		return e.State, nil
+	}
+	return nil, &NotLoadedError{edge: "state"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*ClientEntity) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // CLIENT_NAME
-		&sql.NullString{}, // CLIENT_STATUS
+	}
+}
+
+// fkValues returns the types for scanning foreign-keys values from sql.Rows.
+func (*ClientEntity) fkValues() []interface{} {
+	return []interface{}{
+		&sql.NullInt64{}, // Status_ID
 	}
 }
 
@@ -68,10 +90,14 @@ func (ce *ClientEntity) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		ce.CLIENTNAME = value.String
 	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field CLIENT_STATUS", values[1])
-	} else if value.Valid {
-		ce.CLIENTSTATUS = value.String
+	values = values[1:]
+	if len(values) == len(cliententity.ForeignKeys) {
+		if value, ok := values[0].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field Status_ID", value)
+		} else if value.Valid {
+			ce.Status_ID = new(int)
+			*ce.Status_ID = int(value.Int64)
+		}
 	}
 	return nil
 }
@@ -79,6 +105,11 @@ func (ce *ClientEntity) assignValues(values ...interface{}) error {
 // QueryBooked queries the booked edge of the ClientEntity.
 func (ce *ClientEntity) QueryBooked() *BookingQuery {
 	return (&ClientEntityClient{config: ce.config}).QueryBooked(ce)
+}
+
+// QueryState queries the state edge of the ClientEntity.
+func (ce *ClientEntity) QueryState() *StatusQuery {
+	return (&ClientEntityClient{config: ce.config}).QueryState(ce)
 }
 
 // Update returns a builder for updating this ClientEntity.
@@ -106,8 +137,6 @@ func (ce *ClientEntity) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", ce.ID))
 	builder.WriteString(", CLIENT_NAME=")
 	builder.WriteString(ce.CLIENTNAME)
-	builder.WriteString(", CLIENT_STATUS=")
-	builder.WriteString(ce.CLIENTSTATUS)
 	builder.WriteByte(')')
 	return builder.String()
 }

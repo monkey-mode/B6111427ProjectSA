@@ -17,8 +17,6 @@ func (ClientEntity) Fields() []ent.Field {
 		field.String("CLIENT_NAME").
 			NotEmpty().
 			Unique(),
-		field.String("CLIENT_STATUS").
-			NotEmpty(),
 	}
 }
 
@@ -27,5 +25,8 @@ func (ClientEntity) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("booked", Booking.Type).
 			StorageKey(edge.Column("CLIENT_ID")),
+		edge.From("state", Status.Type).
+			Ref("status").
+			Unique(),
 	}
 }

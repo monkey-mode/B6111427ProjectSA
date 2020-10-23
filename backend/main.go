@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/B6111427/app/ent/role"
+	"github.com/B6111427/app/ent/status"
 	"context"
 	"fmt"
 	"log"
@@ -21,11 +22,12 @@ type User struct{
 	Name string
 	Role int
 }
-//struct for ClientEntity Data
+//struct for ClienEntity Data
 type ClientEntity struct{
 	Name string
-	Status string
+	State int
 }
+
 
 // @title SUT SA Example API
 // @version 1.0
@@ -104,6 +106,14 @@ func main() {
 			Save(context.Background())
 	}
 
+	Status := []string{"Available","In Use","No Service"}
+	for _, st := range Status{
+		client.Status.
+			Create().
+			SetSTATUSNAME(st).
+			Save(context.Background())
+	}
+
 
 	User := []User{
 			User{"B6111427@g.sut.sc.th","Suphachai Phetthamrong",1},
@@ -130,21 +140,30 @@ func main() {
 	}
 
 	ClientEntity := []ClientEntity{
-		ClientEntity{"Video 0n Demand - 01","Available"},
-		ClientEntity{"Video 0n Demand - 02","Available"},
-		ClientEntity{"Video 0n Demand - 03","Available"},
-		ClientEntity{"Video 0n Demand - 04","Available"},
-		ClientEntity{"Video 0n Demand - 05","Available"},
-		ClientEntity{"Video 0n Demand - 06","Available"},
-		ClientEntity{"Video 0n Demand - 07","Available"},
-		ClientEntity{"Video 0n Demand - 08","Available"},
-	}
-
+		ClientEntity{"Video 0n Demand - 01",1},
+		ClientEntity{"Video 0n Demand - 02",1},
+		ClientEntity{"Video 0n Demand - 02",1},
+		ClientEntity{"Video 0n Demand - 03",1},
+		ClientEntity{"Video 0n Demand - 04",1},
+		ClientEntity{"Video 0n Demand - 05",1},
+		ClientEntity{"Video 0n Demand - 06",1},
+		ClientEntity{"Video 0n Demand - 07",1},
+		ClientEntity{"Video 0n Demand - 08",1},
+		ClientEntity{"Video 0n Demand - 09",1}}
 	for _, cl := range ClientEntity {
+
+		s,err := client.Status.
+			Query().
+			Where(status.IDEQ(int(cl.State))).
+			Only(context.Background())
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 		client.ClientEntity.
 			Create().
 			SetCLIENTNAME(cl.Name).
-			SetCLIENTSTATUS(cl.Status).
+			SetState(s).
 			Save(context.Background())
 	}
 

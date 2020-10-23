@@ -98,13 +98,6 @@ func CLIENTNAME(v string) predicate.ClientEntity {
 	})
 }
 
-// CLIENTSTATUS applies equality check predicate on the "CLIENT_STATUS" field. It's identical to CLIENTSTATUSEQ.
-func CLIENTSTATUS(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
 // CLIENTNAMEEQ applies the EQ predicate on the "CLIENT_NAME" field.
 func CLIENTNAMEEQ(v string) predicate.ClientEntity {
 	return predicate.ClientEntity(func(s *sql.Selector) {
@@ -216,117 +209,6 @@ func CLIENTNAMEContainsFold(v string) predicate.ClientEntity {
 	})
 }
 
-// CLIENTSTATUSEQ applies the EQ predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSEQ(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSNEQ applies the NEQ predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSNEQ(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSIn applies the In predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSIn(vs ...string) predicate.ClientEntity {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldCLIENTSTATUS), v...))
-	})
-}
-
-// CLIENTSTATUSNotIn applies the NotIn predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSNotIn(vs ...string) predicate.ClientEntity {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldCLIENTSTATUS), v...))
-	})
-}
-
-// CLIENTSTATUSGT applies the GT predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSGT(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSGTE applies the GTE predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSGTE(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSLT applies the LT predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSLT(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSLTE applies the LTE predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSLTE(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSContains applies the Contains predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSContains(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSHasPrefix applies the HasPrefix predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSHasPrefix(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSHasSuffix applies the HasSuffix predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSHasSuffix(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSEqualFold applies the EqualFold predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSEqualFold(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
-// CLIENTSTATUSContainsFold applies the ContainsFold predicate on the "CLIENT_STATUS" field.
-func CLIENTSTATUSContainsFold(v string) predicate.ClientEntity {
-	return predicate.ClientEntity(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldCLIENTSTATUS), v))
-	})
-}
-
 // HasBooked applies the HasEdge predicate on the "booked" edge.
 func HasBooked() predicate.ClientEntity {
 	return predicate.ClientEntity(func(s *sql.Selector) {
@@ -346,6 +228,34 @@ func HasBookedWith(preds ...predicate.Booking) predicate.ClientEntity {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BookedInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, BookedTable, BookedColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasState applies the HasEdge predicate on the "state" edge.
+func HasState() predicate.ClientEntity {
+	return predicate.ClientEntity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StateTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, StateTable, StateColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStateWith applies the HasEdge predicate on the "state" edge with a given conditions (other predicates).
+func HasStateWith(preds ...predicate.Status) predicate.ClientEntity {
+	return predicate.ClientEntity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StateInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, StateTable, StateColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -13,6 +13,11 @@ definitions:
       user:
         type: integer
     type: object
+  controllers.ClientEntity:
+    properties:
+      sid:
+        type: integer
+    type: object
   ent.Booking:
     properties:
       BOOKING_DATE:
@@ -80,9 +85,6 @@ definitions:
       CLIENT_NAME:
         description: CLIENTNAME holds the value of the "CLIENT_NAME" field.
         type: string
-      CLIENT_STATUS:
-        description: CLIENTSTATUS holds the value of the "CLIENT_STATUS" field.
-        type: string
       edges:
         $ref: '#/definitions/ent.ClientEntityEdges'
         description: |-
@@ -92,6 +94,8 @@ definitions:
       id:
         description: ID of the ent.
         type: integer
+      status_ID:
+        type: integer
     type: object
   ent.ClientEntityEdges:
     properties:
@@ -100,6 +104,10 @@ definitions:
         items:
           $ref: '#/definitions/ent.Booking'
         type: array
+      state:
+        $ref: '#/definitions/ent.Status'
+        description: State holds the value of the state edge.
+        type: object
     type: object
   ent.Role:
     properties:
@@ -122,6 +130,29 @@ definitions:
         description: Role holds the value of the role edge.
         items:
           $ref: '#/definitions/ent.User'
+        type: array
+    type: object
+  ent.Status:
+    properties:
+      STATUS_NAME:
+        description: STATUSNAME holds the value of the "STATUS_NAME" field.
+        type: string
+      edges:
+        $ref: '#/definitions/ent.StatusEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the StatusQuery when eager-loading is set.
+        type: object
+      id:
+        description: ID of the ent.
+        type: integer
+    type: object
+  ent.StatusEdges:
+    properties:
+      status:
+        description: Status holds the value of the status edge.
+        items:
+          $ref: '#/definitions/ent.ClientEntity'
         type: array
     type: object
   ent.User:
@@ -488,10 +519,6 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: Status
-        in: query
-        name: offset
-        type: integer
       produces:
       - application/json
       responses:
@@ -613,7 +640,7 @@ paths:
         name: cliententity
         required: true
         schema:
-          $ref: '#/definitions/ent.ClientEntity'
+          $ref: '#/definitions/controllers.ClientEntity'
       produces:
       - application/json
       responses:
@@ -781,6 +808,157 @@ paths:
           schema:
             $ref: '#/definitions/gin.H'
       summary: Update a role entity by ID
+  /statuss:
+    get:
+      description: list status entities
+      operationId: list-status
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.Status'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: List status entities
+    post:
+      consumes:
+      - application/json
+      description: Create status
+      operationId: create-status
+      parameters:
+      - description: Status entity
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/ent.Status'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Create status
+  /statuss/{id}:
+    delete:
+      description: get status by ID
+      operationId: delete-status
+      parameters:
+      - description: Status ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Delete a status entity by ID
+    get:
+      description: get status by ID
+      operationId: get-status
+      parameters:
+      - description: Status ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Get a status entity by ID
+    put:
+      consumes:
+      - application/json
+      description: update status by ID
+      operationId: update-status
+      parameters:
+      - description: Status ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status entity
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/ent.Status'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Update a status entity by ID
   /users:
     get:
       description: list user entities

@@ -105,14 +105,14 @@ export default function Create() {
   const CreateBooking = async () => {
     setTimeleft("03:00:00")
     const booking = {
-      bookingDate: bookingdate + ":00+07:00",
+      bookingDate: bookingdate,
       timeLeft: timeleft,
       bookingtype: bookingtypeID,
       client: clientID,
       user: userID,
     };
     const cliententity = {
-      cLIENTSTATUS: "In Use",
+      sid: Number(2)
     };
     console.log(booking);
     const res2: any = await api.updateCliententity({ id: clientID, cliententity: cliententity });
@@ -241,6 +241,7 @@ export default function Create() {
                 onClick={() => {
                   CreateBooking();
                 }}
+                
                 variant="contained"
                 color="primary"
               >

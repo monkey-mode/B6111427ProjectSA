@@ -27,7 +27,7 @@ const AppRouter = app.getRouter();
 const deprecatedAppRoutes = app.getRoutes();
 
 const catalogRouteRef = createRouteRef({
-  path: '/welcome',
+  path: '/catalog',
   title: 'Service Catalog',
 });
 
@@ -40,7 +40,7 @@ const App: FC<{}> = () => (
       <SidebarPage>
         <AppSidebar />
         <Routes>
-          <Navigate key="/" to="/login" />
+          <Navigate key="/" to="/welcome" />
           <Route
             path="/catalog/*"
             element={<CatalogRouter EntityPage={EntityPage} />}

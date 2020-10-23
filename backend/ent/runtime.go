@@ -10,6 +10,7 @@ import (
 	"github.com/B6111427/app/ent/cliententity"
 	"github.com/B6111427/app/ent/role"
 	"github.com/B6111427/app/ent/schema"
+	"github.com/B6111427/app/ent/status"
 	"github.com/B6111427/app/ent/user"
 )
 
@@ -39,16 +40,18 @@ func init() {
 	cliententityDescCLIENTNAME := cliententityFields[0].Descriptor()
 	// cliententity.CLIENTNAMEValidator is a validator for the "CLIENT_NAME" field. It is called by the builders before save.
 	cliententity.CLIENTNAMEValidator = cliententityDescCLIENTNAME.Validators[0].(func(string) error)
-	// cliententityDescCLIENTSTATUS is the schema descriptor for CLIENT_STATUS field.
-	cliententityDescCLIENTSTATUS := cliententityFields[1].Descriptor()
-	// cliententity.CLIENTSTATUSValidator is a validator for the "CLIENT_STATUS" field. It is called by the builders before save.
-	cliententity.CLIENTSTATUSValidator = cliententityDescCLIENTSTATUS.Validators[0].(func(string) error)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescROLENAME is the schema descriptor for ROLE_NAME field.
 	roleDescROLENAME := roleFields[0].Descriptor()
 	// role.ROLENAMEValidator is a validator for the "ROLE_NAME" field. It is called by the builders before save.
 	role.ROLENAMEValidator = roleDescROLENAME.Validators[0].(func(string) error)
+	statusFields := schema.Status{}.Fields()
+	_ = statusFields
+	// statusDescSTATUSNAME is the schema descriptor for STATUS_NAME field.
+	statusDescSTATUSNAME := statusFields[0].Descriptor()
+	// status.STATUSNAMEValidator is a validator for the "STATUS_NAME" field. It is called by the builders before save.
+	status.STATUSNAMEValidator = statusDescSTATUSNAME.Validators[0].(func(string) error)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUSEREMAIL is the schema descriptor for USER_EMAIL field.

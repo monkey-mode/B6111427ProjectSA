@@ -12,6 +12,7 @@ import (
 	"github.com/B6111427/app/ent/booking"
 	"github.com/B6111427/app/ent/cliententity"
 	"github.com/B6111427/app/ent/predicate"
+	"github.com/B6111427/app/ent/status"
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
@@ -27,6 +28,8 @@ type ClientEntityQuery struct {
 	predicates []predicate.ClientEntity
 	// eager-loading edges.
 	withBooked *BookingQuery
+	withState  *StatusQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -67,6 +70,24 @@ func (ceq *ClientEntityQuery) QueryBooked() *BookingQuery {
 			sqlgraph.From(cliententity.Table, cliententity.FieldID, ceq.sqlQuery()),
 			sqlgraph.To(booking.Table, booking.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, cliententity.BookedTable, cliententity.BookedColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ceq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryState chains the current query on the state edge.
+func (ceq *ClientEntityQuery) QueryState() *StatusQuery {
+	query := &StatusQuery{config: ceq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ceq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cliententity.Table, cliententity.FieldID, ceq.sqlQuery()),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, cliententity.StateTable, cliententity.StateColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ceq.driver.Dialect(), step)
 		return fromU, nil
@@ -264,6 +285,17 @@ func (ceq *ClientEntityQuery) WithBooked(opts ...func(*BookingQuery)) *ClientEnt
 	return ceq
 }
 
+//  WithState tells the query-builder to eager-loads the nodes that are connected to
+// the "state" edge. The optional arguments used to configure the query builder of the edge.
+func (ceq *ClientEntityQuery) WithState(opts ...func(*StatusQuery)) *ClientEntityQuery {
+	query := &StatusQuery{config: ceq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ceq.withState = query
+	return ceq
+}
+
 // GroupBy used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -329,15 +361,26 @@ func (ceq *ClientEntityQuery) prepareQuery(ctx context.Context) error {
 func (ceq *ClientEntityQuery) sqlAll(ctx context.Context) ([]*ClientEntity, error) {
 	var (
 		nodes       = []*ClientEntity{}
+		withFKs     = ceq.withFKs
 		_spec       = ceq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			ceq.withBooked != nil,
+			ceq.withState != nil,
 		}
 	)
+	if ceq.withState != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, cliententity.ForeignKeys...)
+	}
 	_spec.ScanValues = func() []interface{} {
 		node := &ClientEntity{config: ceq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
+		if withFKs {
+			values = append(values, node.fkValues()...)
+		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -380,6 +423,31 @@ func (ceq *ClientEntityQuery) sqlAll(ctx context.Context) ([]*ClientEntity, erro
 				return nil, fmt.Errorf(`unexpected foreign-key "CLIENT_ID" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Booked = append(node.Edges.Booked, n)
+		}
+	}
+
+	if query := ceq.withState; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*ClientEntity)
+		for i := range nodes {
+			if fk := nodes[i].Status_ID; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(status.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "Status_ID" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.State = n
+			}
 		}
 	}
 

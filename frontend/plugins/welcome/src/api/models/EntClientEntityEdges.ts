@@ -18,6 +18,10 @@ import {
     EntBookingFromJSON,
     EntBookingFromJSONTyped,
     EntBookingToJSON,
+    EntStatus,
+    EntStatusFromJSON,
+    EntStatusFromJSONTyped,
+    EntStatusToJSON,
 } from './';
 
 /**
@@ -32,6 +36,12 @@ export interface EntClientEntityEdges {
      * @memberof EntClientEntityEdges
      */
     booked?: Array<EntBooking>;
+    /**
+     * 
+     * @type {EntStatus}
+     * @memberof EntClientEntityEdges
+     */
+    state?: EntStatus;
 }
 
 export function EntClientEntityEdgesFromJSON(json: any): EntClientEntityEdges {
@@ -45,6 +55,7 @@ export function EntClientEntityEdgesFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'booked': !exists(json, 'booked') ? undefined : ((json['booked'] as Array<any>).map(EntBookingFromJSON)),
+        'state': !exists(json, 'State') ? undefined : EntStatusFromJSON(json['State']),
     };
 }
 
@@ -58,6 +69,7 @@ export function EntClientEntityEdgesToJSON(value?: EntClientEntityEdges | null):
     return {
         
         'booked': value.booked === undefined ? undefined : ((value.booked as Array<any>).map(EntBookingToJSON)),
+        'state': EntStatusToJSON(value.state),
     };
 }
 

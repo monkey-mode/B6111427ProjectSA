@@ -18,5 +18,8 @@ type ClientEntity func(*sql.Selector)
 // Role is the predicate function for role builders.
 type Role func(*sql.Selector)
 
+// Status is the predicate function for status builders.
+type Status func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

@@ -33,12 +33,6 @@ export interface EntClientEntity {
      */
     cLIENTNAME?: string;
     /**
-     * CLIENTSTATUS holds the value of the "CLIENT_STATUS" field.
-     * @type {string}
-     * @memberof EntClientEntity
-     */
-    cLIENTSTATUS?: string;
-    /**
      * 
      * @type {EntClientEntityEdges}
      * @memberof EntClientEntity
@@ -50,6 +44,12 @@ export interface EntClientEntity {
      * @memberof EntClientEntity
      */
     id?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EntClientEntity
+     */
+    statusID?: number;
 }
 
 export function EntClientEntityFromJSON(json: any): EntClientEntity {
@@ -63,9 +63,9 @@ export function EntClientEntityFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'cLIENTNAME': !exists(json, 'CLIENT_NAME') ? undefined : json['CLIENT_NAME'],
-        'cLIENTSTATUS': !exists(json, 'CLIENT_STATUS') ? undefined : json['CLIENT_STATUS'],
         'edges': !exists(json, 'edges') ? undefined : EntClientEntityEdgesFromJSON(json['edges']),
         'id': !exists(json, 'id') ? undefined : json['id'],
+        'statusID': !exists(json, 'status_ID') ? undefined : json['status_ID'],
     };
 }
 
@@ -79,9 +79,9 @@ export function EntClientEntityToJSON(value?: EntClientEntity | null): any {
     return {
         
         'CLIENT_NAME': value.cLIENTNAME,
-        'CLIENT_STATUS': value.cLIENTSTATUS,
         'edges': EntClientEntityEdgesToJSON(value.edges),
         'id': value.id,
+        'status_ID': value.statusID,
     };
 }
 

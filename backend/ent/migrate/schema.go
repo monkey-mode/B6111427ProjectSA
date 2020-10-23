@@ -62,14 +62,22 @@ var (
 	ClientEntitiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "client_name", Type: field.TypeString, Unique: true},
-		{Name: "client_status", Type: field.TypeString},
+		{Name: "Status_ID", Type: field.TypeInt, Nullable: true},
 	}
 	// ClientEntitiesTable holds the schema information for the "client_entities" table.
 	ClientEntitiesTable = &schema.Table{
-		Name:        "client_entities",
-		Columns:     ClientEntitiesColumns,
-		PrimaryKey:  []*schema.Column{ClientEntitiesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "client_entities",
+		Columns:    ClientEntitiesColumns,
+		PrimaryKey: []*schema.Column{ClientEntitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "client_entities_status_status",
+				Columns: []*schema.Column{ClientEntitiesColumns[2]},
+
+				RefColumns: []*schema.Column{StatusColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
@@ -81,6 +89,18 @@ var (
 		Name:        "roles",
 		Columns:     RolesColumns,
 		PrimaryKey:  []*schema.Column{RolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
+	// StatusColumns holds the columns for the "status" table.
+	StatusColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "status_name", Type: field.TypeString, Unique: true},
+	}
+	// StatusTable holds the schema information for the "status" table.
+	StatusTable = &schema.Table{
+		Name:        "status",
+		Columns:     StatusColumns,
+		PrimaryKey:  []*schema.Column{StatusColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
 	}
 	// UsersColumns holds the columns for the "users" table.
@@ -111,6 +131,7 @@ var (
 		BookingtypesTable,
 		ClientEntitiesTable,
 		RolesTable,
+		StatusTable,
 		UsersTable,
 	}
 )
@@ -119,5 +140,6 @@ func init() {
 	BookingsTable.ForeignKeys[0].RefTable = BookingtypesTable
 	BookingsTable.ForeignKeys[1].RefTable = ClientEntitiesTable
 	BookingsTable.ForeignKeys[2].RefTable = UsersTable
+	ClientEntitiesTable.ForeignKeys[0].RefTable = StatusTable
 	UsersTable.ForeignKeys[0].RefTable = RolesTable
 }

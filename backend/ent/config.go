@@ -28,6 +28,7 @@ type hooks struct {
 	Bookingtype  []ent.Hook
 	ClientEntity []ent.Hook
 	Role         []ent.Hook
+	Status       []ent.Hook
 	User         []ent.Hook
 }
 

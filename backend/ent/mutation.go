@@ -12,6 +12,7 @@ import (
 	"github.com/B6111427/app/ent/bookingtype"
 	"github.com/B6111427/app/ent/cliententity"
 	"github.com/B6111427/app/ent/role"
+	"github.com/B6111427/app/ent/status"
 	"github.com/B6111427/app/ent/user"
 
 	"github.com/facebookincubator/ent"
@@ -30,6 +31,7 @@ const (
 	TypeBookingtype  = "Bookingtype"
 	TypeClientEntity = "ClientEntity"
 	TypeRole         = "Role"
+	TypeStatus       = "Status"
 	TypeUser         = "User"
 )
 
@@ -940,16 +942,17 @@ func (m *BookingtypeMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type ClientEntityMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	_CLIENT_NAME   *string
-	_CLIENT_STATUS *string
-	clearedFields  map[string]struct{}
-	booked         map[int]struct{}
-	removedbooked  map[int]struct{}
-	done           bool
-	oldValue       func(context.Context) (*ClientEntity, error)
+	op            Op
+	typ           string
+	id            *int
+	_CLIENT_NAME  *string
+	clearedFields map[string]struct{}
+	booked        map[int]struct{}
+	removedbooked map[int]struct{}
+	state         *int
+	clearedstate  bool
+	done          bool
+	oldValue      func(context.Context) (*ClientEntity, error)
 }
 
 var _ ent.Mutation = (*ClientEntityMutation)(nil)
@@ -1068,43 +1071,6 @@ func (m *ClientEntityMutation) ResetCLIENTNAME() {
 	m._CLIENT_NAME = nil
 }
 
-// SetCLIENTSTATUS sets the CLIENT_STATUS field.
-func (m *ClientEntityMutation) SetCLIENTSTATUS(s string) {
-	m._CLIENT_STATUS = &s
-}
-
-// CLIENTSTATUS returns the CLIENT_STATUS value in the mutation.
-func (m *ClientEntityMutation) CLIENTSTATUS() (r string, exists bool) {
-	v := m._CLIENT_STATUS
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCLIENTSTATUS returns the old CLIENT_STATUS value of the ClientEntity.
-// If the ClientEntity object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ClientEntityMutation) OldCLIENTSTATUS(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCLIENTSTATUS is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCLIENTSTATUS requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCLIENTSTATUS: %w", err)
-	}
-	return oldValue.CLIENTSTATUS, nil
-}
-
-// ResetCLIENTSTATUS reset all changes of the "CLIENT_STATUS" field.
-func (m *ClientEntityMutation) ResetCLIENTSTATUS() {
-	m._CLIENT_STATUS = nil
-}
-
 // AddBookedIDs adds the booked edge to Booking by ids.
 func (m *ClientEntityMutation) AddBookedIDs(ids ...int) {
 	if m.booked == nil {
@@ -1147,6 +1113,45 @@ func (m *ClientEntityMutation) ResetBooked() {
 	m.removedbooked = nil
 }
 
+// SetStateID sets the state edge to Status by id.
+func (m *ClientEntityMutation) SetStateID(id int) {
+	m.state = &id
+}
+
+// ClearState clears the state edge to Status.
+func (m *ClientEntityMutation) ClearState() {
+	m.clearedstate = true
+}
+
+// StateCleared returns if the edge state was cleared.
+func (m *ClientEntityMutation) StateCleared() bool {
+	return m.clearedstate
+}
+
+// StateID returns the state id in the mutation.
+func (m *ClientEntityMutation) StateID() (id int, exists bool) {
+	if m.state != nil {
+		return *m.state, true
+	}
+	return
+}
+
+// StateIDs returns the state ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// StateID instead. It exists only for internal usage by the builders.
+func (m *ClientEntityMutation) StateIDs() (ids []int) {
+	if id := m.state; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetState reset all changes of the "state" edge.
+func (m *ClientEntityMutation) ResetState() {
+	m.state = nil
+	m.clearedstate = false
+}
+
 // Op returns the operation name.
 func (m *ClientEntityMutation) Op() Op {
 	return m.op
@@ -1161,12 +1166,9 @@ func (m *ClientEntityMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ClientEntityMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 1)
 	if m._CLIENT_NAME != nil {
 		fields = append(fields, cliententity.FieldCLIENTNAME)
-	}
-	if m._CLIENT_STATUS != nil {
-		fields = append(fields, cliententity.FieldCLIENTSTATUS)
 	}
 	return fields
 }
@@ -1178,8 +1180,6 @@ func (m *ClientEntityMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case cliententity.FieldCLIENTNAME:
 		return m.CLIENTNAME()
-	case cliententity.FieldCLIENTSTATUS:
-		return m.CLIENTSTATUS()
 	}
 	return nil, false
 }
@@ -1191,8 +1191,6 @@ func (m *ClientEntityMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case cliententity.FieldCLIENTNAME:
 		return m.OldCLIENTNAME(ctx)
-	case cliententity.FieldCLIENTSTATUS:
-		return m.OldCLIENTSTATUS(ctx)
 	}
 	return nil, fmt.Errorf("unknown ClientEntity field %s", name)
 }
@@ -1208,13 +1206,6 @@ func (m *ClientEntityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCLIENTNAME(v)
-		return nil
-	case cliententity.FieldCLIENTSTATUS:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCLIENTSTATUS(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ClientEntity field %s", name)
@@ -1269,9 +1260,6 @@ func (m *ClientEntityMutation) ResetField(name string) error {
 	case cliententity.FieldCLIENTNAME:
 		m.ResetCLIENTNAME()
 		return nil
-	case cliententity.FieldCLIENTSTATUS:
-		m.ResetCLIENTSTATUS()
-		return nil
 	}
 	return fmt.Errorf("unknown ClientEntity field %s", name)
 }
@@ -1279,9 +1267,12 @@ func (m *ClientEntityMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ClientEntityMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.booked != nil {
 		edges = append(edges, cliententity.EdgeBooked)
+	}
+	if m.state != nil {
+		edges = append(edges, cliententity.EdgeState)
 	}
 	return edges
 }
@@ -1296,6 +1287,10 @@ func (m *ClientEntityMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case cliententity.EdgeState:
+		if id := m.state; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
@@ -1303,7 +1298,7 @@ func (m *ClientEntityMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ClientEntityMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedbooked != nil {
 		edges = append(edges, cliententity.EdgeBooked)
 	}
@@ -1327,7 +1322,10 @@ func (m *ClientEntityMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ClientEntityMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedstate {
+		edges = append(edges, cliententity.EdgeState)
+	}
 	return edges
 }
 
@@ -1335,6 +1333,8 @@ func (m *ClientEntityMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ClientEntityMutation) EdgeCleared(name string) bool {
 	switch name {
+	case cliententity.EdgeState:
+		return m.clearedstate
 	}
 	return false
 }
@@ -1343,6 +1343,9 @@ func (m *ClientEntityMutation) EdgeCleared(name string) bool {
 // error if the edge name is not defined in the schema.
 func (m *ClientEntityMutation) ClearEdge(name string) error {
 	switch name {
+	case cliententity.EdgeState:
+		m.ClearState()
+		return nil
 	}
 	return fmt.Errorf("unknown ClientEntity unique edge %s", name)
 }
@@ -1354,6 +1357,9 @@ func (m *ClientEntityMutation) ResetEdge(name string) error {
 	switch name {
 	case cliententity.EdgeBooked:
 		m.ResetBooked()
+		return nil
+	case cliententity.EdgeState:
+		m.ResetState()
 		return nil
 	}
 	return fmt.Errorf("unknown ClientEntity edge %s", name)
@@ -1725,6 +1731,374 @@ func (m *RoleMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Role edge %s", name)
+}
+
+// StatusMutation represents an operation that mutate the StatusSlice
+// nodes in the graph.
+type StatusMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	_STATUS_NAME  *string
+	clearedFields map[string]struct{}
+	status        map[int]struct{}
+	removedstatus map[int]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Status, error)
+}
+
+var _ ent.Mutation = (*StatusMutation)(nil)
+
+// statusOption allows to manage the mutation configuration using functional options.
+type statusOption func(*StatusMutation)
+
+// newStatusMutation creates new mutation for $n.Name.
+func newStatusMutation(c config, op Op, opts ...statusOption) *StatusMutation {
+	m := &StatusMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeStatus,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withStatusID sets the id field of the mutation.
+func withStatusID(id int) statusOption {
+	return func(m *StatusMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Status
+		)
+		m.oldValue = func(ctx context.Context) (*Status, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Status.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withStatus sets the old Status of the mutation.
+func withStatus(node *Status) statusOption {
+	return func(m *StatusMutation) {
+		m.oldValue = func(context.Context) (*Status, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m StatusMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m StatusMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *StatusMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetSTATUSNAME sets the STATUS_NAME field.
+func (m *StatusMutation) SetSTATUSNAME(s string) {
+	m._STATUS_NAME = &s
+}
+
+// STATUSNAME returns the STATUS_NAME value in the mutation.
+func (m *StatusMutation) STATUSNAME() (r string, exists bool) {
+	v := m._STATUS_NAME
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSTATUSNAME returns the old STATUS_NAME value of the Status.
+// If the Status object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *StatusMutation) OldSTATUSNAME(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSTATUSNAME is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSTATUSNAME requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSTATUSNAME: %w", err)
+	}
+	return oldValue.STATUSNAME, nil
+}
+
+// ResetSTATUSNAME reset all changes of the "STATUS_NAME" field.
+func (m *StatusMutation) ResetSTATUSNAME() {
+	m._STATUS_NAME = nil
+}
+
+// AddStatuIDs adds the status edge to ClientEntity by ids.
+func (m *StatusMutation) AddStatuIDs(ids ...int) {
+	if m.status == nil {
+		m.status = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.status[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveStatuIDs removes the status edge to ClientEntity by ids.
+func (m *StatusMutation) RemoveStatuIDs(ids ...int) {
+	if m.removedstatus == nil {
+		m.removedstatus = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedstatus[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStatus returns the removed ids of status.
+func (m *StatusMutation) RemovedStatusIDs() (ids []int) {
+	for id := range m.removedstatus {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StatusIDs returns the status ids in the mutation.
+func (m *StatusMutation) StatusIDs() (ids []int) {
+	for id := range m.status {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStatus reset all changes of the "status" edge.
+func (m *StatusMutation) ResetStatus() {
+	m.status = nil
+	m.removedstatus = nil
+}
+
+// Op returns the operation name.
+func (m *StatusMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Status).
+func (m *StatusMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *StatusMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m._STATUS_NAME != nil {
+		fields = append(fields, status.FieldSTATUSNAME)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *StatusMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case status.FieldSTATUSNAME:
+		return m.STATUSNAME()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *StatusMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case status.FieldSTATUSNAME:
+		return m.OldSTATUSNAME(ctx)
+	}
+	return nil, fmt.Errorf("unknown Status field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *StatusMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case status.FieldSTATUSNAME:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSTATUSNAME(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Status field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *StatusMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *StatusMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *StatusMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Status numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *StatusMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *StatusMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *StatusMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Status nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *StatusMutation) ResetField(name string) error {
+	switch name {
+	case status.FieldSTATUSNAME:
+		m.ResetSTATUSNAME()
+		return nil
+	}
+	return fmt.Errorf("unknown Status field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *StatusMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.status != nil {
+		edges = append(edges, status.EdgeStatus)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *StatusMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case status.EdgeStatus:
+		ids := make([]ent.Value, 0, len(m.status))
+		for id := range m.status {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *StatusMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedstatus != nil {
+		edges = append(edges, status.EdgeStatus)
+	}
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case status.EdgeStatus:
+		ids := make([]ent.Value, 0, len(m.removedstatus))
+		for id := range m.removedstatus {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *StatusMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *StatusMutation) EdgeCleared(name string) bool {
+	switch name {
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *StatusMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Status unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *StatusMutation) ResetEdge(name string) error {
+	switch name {
+	case status.EdgeStatus:
+		m.ResetStatus()
+		return nil
+	}
+	return fmt.Errorf("unknown Status edge %s", name)
 }
 
 // UserMutation represents an operation that mutate the Users

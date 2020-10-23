@@ -20,6 +20,8 @@ type Tx struct {
 	ClientEntity *ClientEntityClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
+	// Status is the client for interacting with the Status builders.
+	Status *StatusClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -161,6 +163,7 @@ func (tx *Tx) init() {
 	tx.Bookingtype = NewBookingtypeClient(tx.config)
 	tx.ClientEntity = NewClientEntityClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
+	tx.Status = NewStatusClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

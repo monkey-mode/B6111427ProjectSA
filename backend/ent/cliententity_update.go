@@ -9,6 +9,7 @@ import (
 	"github.com/B6111427/app/ent/booking"
 	"github.com/B6111427/app/ent/cliententity"
 	"github.com/B6111427/app/ent/predicate"
+	"github.com/B6111427/app/ent/status"
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
@@ -34,12 +35,6 @@ func (ceu *ClientEntityUpdate) SetCLIENTNAME(s string) *ClientEntityUpdate {
 	return ceu
 }
 
-// SetCLIENTSTATUS sets the CLIENT_STATUS field.
-func (ceu *ClientEntityUpdate) SetCLIENTSTATUS(s string) *ClientEntityUpdate {
-	ceu.mutation.SetCLIENTSTATUS(s)
-	return ceu
-}
-
 // AddBookedIDs adds the booked edge to Booking by ids.
 func (ceu *ClientEntityUpdate) AddBookedIDs(ids ...int) *ClientEntityUpdate {
 	ceu.mutation.AddBookedIDs(ids...)
@@ -53,6 +48,25 @@ func (ceu *ClientEntityUpdate) AddBooked(b ...*Booking) *ClientEntityUpdate {
 		ids[i] = b[i].ID
 	}
 	return ceu.AddBookedIDs(ids...)
+}
+
+// SetStateID sets the state edge to Status by id.
+func (ceu *ClientEntityUpdate) SetStateID(id int) *ClientEntityUpdate {
+	ceu.mutation.SetStateID(id)
+	return ceu
+}
+
+// SetNillableStateID sets the state edge to Status by id if the given value is not nil.
+func (ceu *ClientEntityUpdate) SetNillableStateID(id *int) *ClientEntityUpdate {
+	if id != nil {
+		ceu = ceu.SetStateID(*id)
+	}
+	return ceu
+}
+
+// SetState sets the state edge to Status.
+func (ceu *ClientEntityUpdate) SetState(s *Status) *ClientEntityUpdate {
+	return ceu.SetStateID(s.ID)
 }
 
 // Mutation returns the ClientEntityMutation object of the builder.
@@ -75,16 +89,17 @@ func (ceu *ClientEntityUpdate) RemoveBooked(b ...*Booking) *ClientEntityUpdate {
 	return ceu.RemoveBookedIDs(ids...)
 }
 
+// ClearState clears the state edge to Status.
+func (ceu *ClientEntityUpdate) ClearState() *ClientEntityUpdate {
+	ceu.mutation.ClearState()
+	return ceu
+}
+
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (ceu *ClientEntityUpdate) Save(ctx context.Context) (int, error) {
 	if v, ok := ceu.mutation.CLIENTNAME(); ok {
 		if err := cliententity.CLIENTNAMEValidator(v); err != nil {
 			return 0, &ValidationError{Name: "CLIENT_NAME", err: fmt.Errorf("ent: validator failed for field \"CLIENT_NAME\": %w", err)}
-		}
-	}
-	if v, ok := ceu.mutation.CLIENTSTATUS(); ok {
-		if err := cliententity.CLIENTSTATUSValidator(v); err != nil {
-			return 0, &ValidationError{Name: "CLIENT_STATUS", err: fmt.Errorf("ent: validator failed for field \"CLIENT_STATUS\": %w", err)}
 		}
 	}
 
@@ -162,13 +177,6 @@ func (ceu *ClientEntityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: cliententity.FieldCLIENTNAME,
 		})
 	}
-	if value, ok := ceu.mutation.CLIENTSTATUS(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: cliententity.FieldCLIENTSTATUS,
-		})
-	}
 	if nodes := ceu.mutation.RemovedBookedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -207,6 +215,41 @@ func (ceu *ClientEntityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ceu.mutation.StateCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cliententity.StateTable,
+			Columns: []string{cliententity.StateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: status.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ceu.mutation.StateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cliententity.StateTable,
+			Columns: []string{cliententity.StateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: status.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ceu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{cliententity.Label}
@@ -231,12 +274,6 @@ func (ceuo *ClientEntityUpdateOne) SetCLIENTNAME(s string) *ClientEntityUpdateOn
 	return ceuo
 }
 
-// SetCLIENTSTATUS sets the CLIENT_STATUS field.
-func (ceuo *ClientEntityUpdateOne) SetCLIENTSTATUS(s string) *ClientEntityUpdateOne {
-	ceuo.mutation.SetCLIENTSTATUS(s)
-	return ceuo
-}
-
 // AddBookedIDs adds the booked edge to Booking by ids.
 func (ceuo *ClientEntityUpdateOne) AddBookedIDs(ids ...int) *ClientEntityUpdateOne {
 	ceuo.mutation.AddBookedIDs(ids...)
@@ -250,6 +287,25 @@ func (ceuo *ClientEntityUpdateOne) AddBooked(b ...*Booking) *ClientEntityUpdateO
 		ids[i] = b[i].ID
 	}
 	return ceuo.AddBookedIDs(ids...)
+}
+
+// SetStateID sets the state edge to Status by id.
+func (ceuo *ClientEntityUpdateOne) SetStateID(id int) *ClientEntityUpdateOne {
+	ceuo.mutation.SetStateID(id)
+	return ceuo
+}
+
+// SetNillableStateID sets the state edge to Status by id if the given value is not nil.
+func (ceuo *ClientEntityUpdateOne) SetNillableStateID(id *int) *ClientEntityUpdateOne {
+	if id != nil {
+		ceuo = ceuo.SetStateID(*id)
+	}
+	return ceuo
+}
+
+// SetState sets the state edge to Status.
+func (ceuo *ClientEntityUpdateOne) SetState(s *Status) *ClientEntityUpdateOne {
+	return ceuo.SetStateID(s.ID)
 }
 
 // Mutation returns the ClientEntityMutation object of the builder.
@@ -272,16 +328,17 @@ func (ceuo *ClientEntityUpdateOne) RemoveBooked(b ...*Booking) *ClientEntityUpda
 	return ceuo.RemoveBookedIDs(ids...)
 }
 
+// ClearState clears the state edge to Status.
+func (ceuo *ClientEntityUpdateOne) ClearState() *ClientEntityUpdateOne {
+	ceuo.mutation.ClearState()
+	return ceuo
+}
+
 // Save executes the query and returns the updated entity.
 func (ceuo *ClientEntityUpdateOne) Save(ctx context.Context) (*ClientEntity, error) {
 	if v, ok := ceuo.mutation.CLIENTNAME(); ok {
 		if err := cliententity.CLIENTNAMEValidator(v); err != nil {
 			return nil, &ValidationError{Name: "CLIENT_NAME", err: fmt.Errorf("ent: validator failed for field \"CLIENT_NAME\": %w", err)}
-		}
-	}
-	if v, ok := ceuo.mutation.CLIENTSTATUS(); ok {
-		if err := cliententity.CLIENTSTATUSValidator(v); err != nil {
-			return nil, &ValidationError{Name: "CLIENT_STATUS", err: fmt.Errorf("ent: validator failed for field \"CLIENT_STATUS\": %w", err)}
 		}
 	}
 
@@ -357,13 +414,6 @@ func (ceuo *ClientEntityUpdateOne) sqlSave(ctx context.Context) (ce *ClientEntit
 			Column: cliententity.FieldCLIENTNAME,
 		})
 	}
-	if value, ok := ceuo.mutation.CLIENTSTATUS(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: cliententity.FieldCLIENTSTATUS,
-		})
-	}
 	if nodes := ceuo.mutation.RemovedBookedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -394,6 +444,41 @@ func (ceuo *ClientEntityUpdateOne) sqlSave(ctx context.Context) (ce *ClientEntit
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ceuo.mutation.StateCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cliententity.StateTable,
+			Columns: []string{cliententity.StateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: status.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ceuo.mutation.StateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cliententity.StateTable,
+			Columns: []string{cliententity.StateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: status.FieldID,
 				},
 			},
 		}

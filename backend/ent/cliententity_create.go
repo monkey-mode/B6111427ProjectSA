@@ -9,6 +9,7 @@ import (
 
 	"github.com/B6111427/app/ent/booking"
 	"github.com/B6111427/app/ent/cliententity"
+	"github.com/B6111427/app/ent/status"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 )
@@ -23,12 +24,6 @@ type ClientEntityCreate struct {
 // SetCLIENTNAME sets the CLIENT_NAME field.
 func (cec *ClientEntityCreate) SetCLIENTNAME(s string) *ClientEntityCreate {
 	cec.mutation.SetCLIENTNAME(s)
-	return cec
-}
-
-// SetCLIENTSTATUS sets the CLIENT_STATUS field.
-func (cec *ClientEntityCreate) SetCLIENTSTATUS(s string) *ClientEntityCreate {
-	cec.mutation.SetCLIENTSTATUS(s)
 	return cec
 }
 
@@ -47,6 +42,25 @@ func (cec *ClientEntityCreate) AddBooked(b ...*Booking) *ClientEntityCreate {
 	return cec.AddBookedIDs(ids...)
 }
 
+// SetStateID sets the state edge to Status by id.
+func (cec *ClientEntityCreate) SetStateID(id int) *ClientEntityCreate {
+	cec.mutation.SetStateID(id)
+	return cec
+}
+
+// SetNillableStateID sets the state edge to Status by id if the given value is not nil.
+func (cec *ClientEntityCreate) SetNillableStateID(id *int) *ClientEntityCreate {
+	if id != nil {
+		cec = cec.SetStateID(*id)
+	}
+	return cec
+}
+
+// SetState sets the state edge to Status.
+func (cec *ClientEntityCreate) SetState(s *Status) *ClientEntityCreate {
+	return cec.SetStateID(s.ID)
+}
+
 // Mutation returns the ClientEntityMutation object of the builder.
 func (cec *ClientEntityCreate) Mutation() *ClientEntityMutation {
 	return cec.mutation
@@ -60,14 +74,6 @@ func (cec *ClientEntityCreate) Save(ctx context.Context) (*ClientEntity, error) 
 	if v, ok := cec.mutation.CLIENTNAME(); ok {
 		if err := cliententity.CLIENTNAMEValidator(v); err != nil {
 			return nil, &ValidationError{Name: "CLIENT_NAME", err: fmt.Errorf("ent: validator failed for field \"CLIENT_NAME\": %w", err)}
-		}
-	}
-	if _, ok := cec.mutation.CLIENTSTATUS(); !ok {
-		return nil, &ValidationError{Name: "CLIENT_STATUS", err: errors.New("ent: missing required field \"CLIENT_STATUS\"")}
-	}
-	if v, ok := cec.mutation.CLIENTSTATUS(); ok {
-		if err := cliententity.CLIENTSTATUSValidator(v); err != nil {
-			return nil, &ValidationError{Name: "CLIENT_STATUS", err: fmt.Errorf("ent: validator failed for field \"CLIENT_STATUS\": %w", err)}
 		}
 	}
 	var (
@@ -138,14 +144,6 @@ func (cec *ClientEntityCreate) createSpec() (*ClientEntity, *sqlgraph.CreateSpec
 		})
 		ce.CLIENTNAME = value
 	}
-	if value, ok := cec.mutation.CLIENTSTATUS(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: cliententity.FieldCLIENTSTATUS,
-		})
-		ce.CLIENTSTATUS = value
-	}
 	if nodes := cec.mutation.BookedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -157,6 +155,25 @@ func (cec *ClientEntityCreate) createSpec() (*ClientEntity, *sqlgraph.CreateSpec
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cec.mutation.StateIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   cliententity.StateTable,
+			Columns: []string{cliententity.StateColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: status.FieldID,
 				},
 			},
 		}

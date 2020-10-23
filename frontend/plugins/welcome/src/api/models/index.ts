@@ -1,4 +1,5 @@
 export * from './ControllersBooking';
+export * from './ControllersClientEntity';
 export * from './EntBooking';
 export * from './EntBookingEdges';
 export * from './EntBookingtype';
@@ -7,5 +8,7 @@ export * from './EntClientEntity';
 export * from './EntClientEntityEdges';
 export * from './EntRole';
 export * from './EntRoleEdges';
+export * from './EntStatus';
+export * from './EntStatusEdges';
 export * from './EntUser';
 export * from './EntUserEdges';

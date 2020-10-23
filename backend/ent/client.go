@@ -13,6 +13,7 @@ import (
 	"github.com/B6111427/app/ent/bookingtype"
 	"github.com/B6111427/app/ent/cliententity"
 	"github.com/B6111427/app/ent/role"
+	"github.com/B6111427/app/ent/status"
 	"github.com/B6111427/app/ent/user"
 
 	"github.com/facebookincubator/ent/dialect"
@@ -33,6 +34,8 @@ type Client struct {
 	ClientEntity *ClientEntityClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
+	// Status is the client for interacting with the Status builders.
+	Status *StatusClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -52,6 +55,7 @@ func (c *Client) init() {
 	c.Bookingtype = NewBookingtypeClient(c.config)
 	c.ClientEntity = NewClientEntityClient(c.config)
 	c.Role = NewRoleClient(c.config)
+	c.Status = NewStatusClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -89,6 +93,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Bookingtype:  NewBookingtypeClient(cfg),
 		ClientEntity: NewClientEntityClient(cfg),
 		Role:         NewRoleClient(cfg),
+		Status:       NewStatusClient(cfg),
 		User:         NewUserClient(cfg),
 	}, nil
 }
@@ -109,6 +114,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Bookingtype:  NewBookingtypeClient(cfg),
 		ClientEntity: NewClientEntityClient(cfg),
 		Role:         NewRoleClient(cfg),
+		Status:       NewStatusClient(cfg),
 		User:         NewUserClient(cfg),
 	}, nil
 }
@@ -142,6 +148,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Bookingtype.Use(hooks...)
 	c.ClientEntity.Use(hooks...)
 	c.Role.Use(hooks...)
+	c.Status.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -469,6 +476,22 @@ func (c *ClientEntityClient) QueryBooked(ce *ClientEntity) *BookingQuery {
 	return query
 }
 
+// QueryState queries the state edge of a ClientEntity.
+func (c *ClientEntityClient) QueryState(ce *ClientEntity) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ce.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(cliententity.Table, cliententity.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, cliententity.StateTable, cliententity.StateColumn),
+		)
+		fromV = sqlgraph.Neighbors(ce.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ClientEntityClient) Hooks() []Hook {
 	return c.hooks.ClientEntity
@@ -571,6 +594,105 @@ func (c *RoleClient) QueryRole(r *Role) *UserQuery {
 // Hooks returns the client hooks.
 func (c *RoleClient) Hooks() []Hook {
 	return c.hooks.Role
+}
+
+// StatusClient is a client for the Status schema.
+type StatusClient struct {
+	config
+}
+
+// NewStatusClient returns a client for the Status from the given config.
+func NewStatusClient(c config) *StatusClient {
+	return &StatusClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `status.Hooks(f(g(h())))`.
+func (c *StatusClient) Use(hooks ...Hook) {
+	c.hooks.Status = append(c.hooks.Status, hooks...)
+}
+
+// Create returns a create builder for Status.
+func (c *StatusClient) Create() *StatusCreate {
+	mutation := newStatusMutation(c.config, OpCreate)
+	return &StatusCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Update returns an update builder for Status.
+func (c *StatusClient) Update() *StatusUpdate {
+	mutation := newStatusMutation(c.config, OpUpdate)
+	return &StatusUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StatusClient) UpdateOne(s *Status) *StatusUpdateOne {
+	mutation := newStatusMutation(c.config, OpUpdateOne, withStatus(s))
+	return &StatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StatusClient) UpdateOneID(id int) *StatusUpdateOne {
+	mutation := newStatusMutation(c.config, OpUpdateOne, withStatusID(id))
+	return &StatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Status.
+func (c *StatusClient) Delete() *StatusDelete {
+	mutation := newStatusMutation(c.config, OpDelete)
+	return &StatusDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *StatusClient) DeleteOne(s *Status) *StatusDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *StatusClient) DeleteOneID(id int) *StatusDeleteOne {
+	builder := c.Delete().Where(status.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StatusDeleteOne{builder}
+}
+
+// Create returns a query builder for Status.
+func (c *StatusClient) Query() *StatusQuery {
+	return &StatusQuery{config: c.config}
+}
+
+// Get returns a Status entity by its id.
+func (c *StatusClient) Get(ctx context.Context, id int) (*Status, error) {
+	return c.Query().Where(status.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StatusClient) GetX(ctx context.Context, id int) *Status {
+	s, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
+// QueryStatus queries the status edge of a Status.
+func (c *StatusClient) QueryStatus(s *Status) *ClientEntityQuery {
+	query := &ClientEntityQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(cliententity.Table, cliententity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, status.StatusTable, status.StatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StatusClient) Hooks() []Hook {
+	return c.hooks.Status
 }
 
 // UserClient is a client for the User schema.

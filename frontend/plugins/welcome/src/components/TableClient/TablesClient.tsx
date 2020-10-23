@@ -73,7 +73,7 @@ export default function CustomizedTables() {
                 {row.id}
               </StyledTableCell>
               <StyledTableCell align="left">{row.cLIENTNAME}</StyledTableCell>
-              <StyledTableCell align="left">{row.cLIENTSTATUS}</StyledTableCell>
+              <StyledTableCell align="left">{row.edges?.state?.sTATUSNAME}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>

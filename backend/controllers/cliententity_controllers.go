@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/B6111427/app/ent/status"
+
 	"github.com/B6111427/app/ent"
 	"github.com/B6111427/app/ent/cliententity"
 	"github.com/gin-gonic/gin"
@@ -39,7 +41,6 @@ func (ctl *ClientEntityController) CreateClientEntity(c *gin.Context) {
 	cl, err := ctl.client.ClientEntity.
 		Create().
 		SetCLIENTNAME(obj.CLIENTNAME).
-		SetCLIENTSTATUS(obj.CLIENTSTATUS).
 		Save(context.Background())
 	if err != nil {
 		c.JSON(400, gin.H{
@@ -117,57 +118,8 @@ func (ctl *ClientEntityController) ListClientEntity(c *gin.Context) {
 
 	cliententitys, err := ctl.client.ClientEntity.
 		Query().
-		Where(cliententity.CLIENTSTATUSEQ("Available")).
-		Limit(limit).
-		Offset(offset).
-		All(context.Background())
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(200, cliententitys)
-}
-
-// ListClientEntityStatus handles request to get a list of cliententity entities
-// @Summary List cliententity entities
-// @Description list cliententity entities
-// @ID list-cliententity
-// @Produce json
-// @Param limit  query int false "Limit"
-// @Param offset query int false "Offset"
-// @Param offset query int false "Status"
-// @Success 200 {array} ent.ClientEntity
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /cliententitys [get]
-func (ctl *ClientEntityController) ListClientEntityStatus(c *gin.Context) {
-	limitQuery := c.Query("limit")
-	limit := 10
-	if limitQuery != "" {
-		limit64, err := strconv.ParseInt(limitQuery, 10, 64)
-		if err == nil {
-			limit = int(limit64)
-		}
-	}
-
-	offsetQuery := c.Query("offset")
-	offset := 0
-	if offsetQuery != "" {
-		offset64, err := strconv.ParseInt(offsetQuery, 10, 64)
-		if err == nil {
-			offset = int(offset64)
-		}
-	}
-
-	statusQuery := c.Query("Status")
-	status := ""
-	if statusQuery != "" {
-		status = statusQuery
-	}
-	cliententitys, err := ctl.client.ClientEntity.
-		Query().
-		Where(cliententity.CLIENTSTATUSEQ(status)).
+		WithState().
+		Where(cliententity.HasStateWith(status.STATUSNAMEEQ("Available"))).
 		Limit(limit).
 		Offset(offset).
 		All(context.Background())
@@ -212,6 +164,10 @@ func (ctl *ClientEntityController) DeleteClientEntity(c *gin.Context) {
 	c.JSON(200, gin.H{"result": fmt.Sprintf("ok deleted %v", id)})
 }
 
+type ClientEntity struct {
+	Sid int
+}
+
 // UpdateClientEntity handles PUT requests to update a cliententity entity
 // @Summary Update a cliententity entity by ID
 // @Description update cliententity by ID
@@ -219,7 +175,7 @@ func (ctl *ClientEntityController) DeleteClientEntity(c *gin.Context) {
 // @Accept   json
 // @Produce  json
 // @Param id path int true "ClientEntity ID"
-// @Param cliententity body ent.ClientEntity true "ClientEntity entity"
+// @Param cliententity body ClientEntity true "ClientEntity entity"
 // @Success 200 {object} ent.ClientEntity
 // @Failure 400 {object} gin.H
 // @Failure 500 {object} gin.H
@@ -233,17 +189,28 @@ func (ctl *ClientEntityController) UpdateClientEntity(c *gin.Context) {
 		return
 	}
 
-	obj := ent.ClientEntity{}
+	obj := ClientEntity{}
 	if err := c.ShouldBind(&obj); err != nil {
 		c.JSON(400, gin.H{
 			"error": "cliententity binding failed",
 		})
 		return
 	}
-	obj.ID = int(id)
+	s, err := ctl.client.Status.
+		Query().
+		Where(status.IDEQ(int(obj.Sid))).
+		Only(context.Background())
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": "status not found",
+		})
+		return
+	}
+
 	cl, err := ctl.client.ClientEntity.
-		UpdateOne(&obj).
-		SetCLIENTSTATUS(obj.CLIENTSTATUS).
+		UpdateOneID(int(id)).
+		SetState(s).
 		Save(context.Background())
 	if err != nil {
 		c.JSON(400, gin.H{"error": "update failed"})

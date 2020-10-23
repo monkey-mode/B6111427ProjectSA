@@ -40,7 +40,7 @@ const App: FC<{}> = () => (
       <SidebarPage>
         <AppSidebar />
         <Routes>
-          <Navigate key="/" to="/welcome" />
+          <Navigate key="/" to="/login" />
           <Route
             path="/catalog/*"
             element={<CatalogRouter EntityPage={EntityPage} />}

@@ -9,6 +9,8 @@ import {
   TextField, Button, withStyles, makeStyles,
   Theme, FormControl, InputLabel, MenuItem,
   FormHelperText, Select, createStyles,
+  Dialog,DialogActions,DialogContent,DialogContentText,
+  DialogTitle,useMediaQuery,useTheme
 } from '@material-ui/core';
 
 import { Alert } from '@material-ui/lab';
@@ -39,12 +41,16 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const username = { givenuser: 'Suphachai Phetthamrong' };
 
+var pname = '';
 export default function Create() {
+  const [username, setUsername] = useState<EntUser>();
   const profile = { givenName: 'ยินดีต้อนรับสู่ ระบบ VideoOnDemand' };
   const classes = useStyles();
   const api = new DefaultApi();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = useState(true);
 
   const [status, setStatus] = useState(false);
@@ -95,13 +101,29 @@ export default function Create() {
     setUserID(event.target.value as number);
   };
 
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+
 
   const [bookingdate, setBookingdate] = useState(String);
   const [timeleft, setTimeleft] = useState(String);
   const [bookingtypeID, setBookingtypeID] = useState(Number);
   const [clientID, setClientID] = useState(Number);
   const [userID, setUserID] = useState(Number);
-
+ 
+  const handleClose = async () => {
+    setOpen(false);
+    const res = await api.getUser({ id: userID });
+    setUsername(res);
+    pname?=username?.uSERNAME;
+  };
+  const handleClose2 = () => {
+    setOpen(false);
+    setUserID(0);
+    pname="";
+  };
   const CreateBooking = async () => {
     const booking = {
       bookingDate: bookingdate+":00+07:00",
@@ -135,10 +157,14 @@ export default function Create() {
       <Content>
         <ContentHeader title="เพิ่มข้อมูลการจอง">
           <Typography align="left" style={{ marginRight: 16, color: "#00eeff" }}>
-            {username.givenuser}
+            {pname}
           </Typography>
           <div>
-            <Button variant="contained" color="primary">
+          <Button variant="contained" color="primary" onClick={handleClickOpen}>
+        เข้าสู่ระบบ
+      </Button>
+      &nbsp;&nbsp;&nbsp;
+            <Button variant="contained" color="primary" onClick={handleClose2}>
               ออกจากระบบ
        </Button>
           </div>
@@ -172,6 +198,7 @@ export default function Create() {
               </tr>
               <tr><td>สมาชิกห้องสมุด</td><td>
               <FormControl
+              disabled
                 className={classes.margin}
                 variant="outlined"
               >
@@ -267,6 +294,75 @@ export default function Create() {
            </tr>
           </form>
         </div>
+
+        <div>
+      
+      <Dialog
+        fullScreen={fullScreen}
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">{"กรุณาเลือก Email เพื่อเข้าสู่ระบบ"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+          <table>
+              <tr><td width="100">อีเมลผู้ใช้</td><td>
+              <FormControl
+                className={classes.margin}
+                variant="outlined"
+              >
+                <InputLabel id="email-label"></InputLabel>
+                <Select
+                  labelId="email-label"
+                  id="email"
+                  value={userID}
+
+                  onChange={UserIDhandleChange}
+                  style={{ width: 400 }}
+                ><option value="">None</option>
+                  {users.map((item: EntUser) => (
+                    <MenuItem value={item.id} >{item.uSEREMAIL}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              </td>
+              </tr>
+              <tr><td>ชื่อผู้ใช้</td><td>
+              <FormControl
+                disabled
+                className={classes.margin}
+                variant="outlined"
+              >
+                <InputLabel id="user-label"></InputLabel>
+                <Select
+                  labelId="user-label"
+                  id="user"
+                  value={userID}
+                  onChange={UserIDhandleChange}
+                  style={{ width: 400 }}
+                >
+                  {users.map((item: EntUser) => (
+                    <MenuItem value={item.id}>{item.uSERNAME}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              </td>
+              </tr>
+            </table>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={handleClose2} color="primary">
+            ยกเลิก
+          </Button>
+          <Button onClick={handleClose} color="primary" autoFocus>
+            เข้าสู่ระบบ
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+
       </Content>
     </Page>
   );

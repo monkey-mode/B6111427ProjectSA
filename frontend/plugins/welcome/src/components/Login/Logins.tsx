@@ -1,5 +1,6 @@
 import React, { useState, useEffect,Component} from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import WelcomePage from '../WelcomePage';
 import {
   Content, Header, Page, pageTheme, ContentHeader,
 } from '@backstage/core';
@@ -10,7 +11,6 @@ import {
 } from '@material-ui/core';
 
 import { Alert, Autocomplete } from '@material-ui/lab';
-import WelcomePage from '../WelcomePage';
 import { DefaultApi } from '../../api/apis';
 import {
   EntUser,
@@ -48,8 +48,9 @@ export default function Loglin(){
       setUsers(res);
     };
     getUsers();
+    
   }, [loading]);
-
+  
   const UserIDhandleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setUserID(event.target.value as number);
   };
@@ -57,11 +58,13 @@ export default function Loglin(){
   const [userID, setUserID] = useState(Number);
   const [user, setUser] = useState(String);
   return (
+    
     <Page theme={pageTheme.home}>
       <Header
         title={`${profile.givenName}`}
       ></Header>
       <Content>
+
         <ContentHeader title="กรุณาเลือกทำการใส่ Email"></ContentHeader>
         <div className={classes.root}>
           <form noValidate autoComplete="off">
@@ -113,7 +116,7 @@ export default function Loglin(){
             <div>
               <Button
               onClick={() => {
-              
+                
               }}
                 style={{ marginLeft: 20 }}
                 component={RouterLink}

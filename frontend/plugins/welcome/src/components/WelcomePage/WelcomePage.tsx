@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import ComponanceTable from '../Table';
 import Button from '@material-ui/core/Button';
@@ -11,8 +11,9 @@ import {
   Link,
 } from '@backstage/core';
 
-const WelcomePage: FC<{}> = () => {
+function WelcomePage(props: { name: React.ReactNode; }){
   const profile = { givenName: 'to System Analysis and Design 63' };
+
   return (
     <Page theme={pageTheme.home}>
       <Header
@@ -21,6 +22,7 @@ const WelcomePage: FC<{}> = () => {
       ></Header>
       <Content>
         <ContentHeader title="Application CRUD">
+  <p>{props.name}</p>
           <Link component={RouterLink} to="/booking">
             <Button variant="contained" color="primary">
               Booking
